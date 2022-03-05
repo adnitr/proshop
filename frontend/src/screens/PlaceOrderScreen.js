@@ -1,21 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Form,
-  Button,
-  Row,
-  Col,
-  ListGroup,
-  Card,
-  Image,
-} from 'react-bootstrap';
+import React, { useEffect } from 'react';
+import { Button, Row, Col, ListGroup, Card, Image } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import Message from '../components/Message';
+import Loader from '../components/Loader';
 import CheckoutSteps from '../components/CheckoutSteps';
+import { createOrderAction } from '../actions/orderActions';
 import { Link } from 'react-router-dom';
 
-const PlaceOrderScreen = () => {
+const PlaceOrderScreen = ({ history }) => {
+  const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
-
+  const userLogin = useSelector((state) => state.userLogin);
+  useEffect(() => {
+    if (Object.keys(userLogin).length === 0) {
+      history.push('/login?redirect=shipping');
+    } else {
+      if (!userLogin.userInfo) {
+        history.push('/login?redirect=shipping');
+      }
+    }
+  }, [userLogin, history]);
   // Calculate Price
   cart.itemsPrice = cart.cartItems
     .reduce((acc, currItem) => (acc = acc + currItem.price * currItem.qty), 0)
@@ -28,7 +32,31 @@ const PlaceOrderScreen = () => {
     Number(cart.shippingPrice) +
     Number(cart.taxPrice)
   ).toFixed(2);
-  const placeOrderHandler = () => {};
+  const orderCreate = useSelector((state) => state.orderCreate);
+  let success;
+  let order;
+  const { loading, error } = orderCreate;
+  success = orderCreate.success;
+  order = orderCreate.order;
+  useEffect(() => {
+    if (success) {
+      dispatch({ type: 'ORDER_RESET' });
+      history.push(`/order/${order._id}`);
+    }
+  }, [history, success, order, dispatch]);
+  const placeOrderHandler = () => {
+    dispatch(
+      createOrderAction({
+        shippingAddress: cart.shippingAddress,
+        orderItems: cart.cartItems,
+        paymentMethod: 'PayPal',
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice,
+      })
+    );
+  };
   return (
     <>
       <CheckoutSteps step1 step2 step3 step4 />
@@ -120,7 +148,9 @@ const PlaceOrderScreen = () => {
                   <Col>${cart.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              <ListGroup.Item className='text-bold'>
+              <ListGroup.Item>
+                {loading && <Loader />}
+                {error && <Message variant='danger'>{error}</Message>}
                 <Button
                   type='button'
                   className='btn btn-block w-100'
