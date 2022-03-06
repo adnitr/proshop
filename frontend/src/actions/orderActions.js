@@ -5,6 +5,9 @@ import {
   ORDER_DETAILS_FAIL,
   ORDER_DETAILS_REQUEST,
   ORDER_DETAILS_SUCCESS,
+  ORDER_PAY_FAIL,
+  ORDER_PAY_REQUEST,
+  ORDER_PAY_SUCCESS,
 } from '../constants/orderConstants';
 import axios from 'axios';
 
@@ -55,5 +58,35 @@ export const getOrderDetailsAction =
         errMsg = err.message;
       }
       dispatch({ type: ORDER_DETAILS_FAIL, payload: errMsg });
+    }
+  };
+
+export const payOrderAction =
+  (orderId, paymentResult) => async (dispatch, getState) => {
+    try {
+      const {
+        userLogin: { userInfo },
+      } = getState();
+      dispatch({ type: ORDER_PAY_REQUEST });
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      const { data } = await axios.put(
+        `/api/orders/${orderId}/pay`,
+        paymentResult,
+        config
+      );
+      dispatch({ type: ORDER_PAY_SUCCESS, payload: data });
+    } catch (err) {
+      let errMsg;
+      try {
+        errMsg = err.response.data.message;
+      } catch (error) {
+        errMsg = err.message;
+      }
+      dispatch({ type: ORDER_PAY_FAIL, payload: errMsg });
     }
   };
