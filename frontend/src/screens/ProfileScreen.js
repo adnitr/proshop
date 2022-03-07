@@ -44,7 +44,7 @@ const ProfileScreen = ({ location, history }) => {
     if (!userInfo) {
       history.push('/login');
     } else {
-      if (Object.keys(user).length === 0) {
+      if (Object.keys(user).length === 0 || user.name !== userInfo.name) {
         dispatch(getUserDetails('profile'));
         dispatch(orderListMyAction());
       } else {
