@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Form, Button } from 'react-bootstrap';
@@ -17,6 +18,7 @@ const ProductEditScreen = ({ match, history }) => {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [countInStock, setCountInStock] = useState(0);
+  const [uploading, setUploading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -64,6 +66,27 @@ const ProductEditScreen = ({ match, history }) => {
     );
   };
 
+  const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploading(true);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      const { data } = await axios.post('/api/uploads', formData, config);
+      setImage(data);
+      setUploading(false);
+    } catch (e) {
+      console.error(e);
+      setUploading(false);
+    }
+  };
+
   useEffect(() => {
     console.log('hi');
     if (successUpdate) {
@@ -107,6 +130,7 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setName(e.target.value);
                 }}
+                required
               ></Form.Control>
             </Form.Group>
             <Form.Group controlId='price' className='my-3'>
@@ -118,6 +142,7 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setPrice(e.target.value);
                 }}
+                required
               ></Form.Control>
             </Form.Group>
             <Form.Group controlId='brand' className='my-3'>
@@ -129,6 +154,7 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setBrand(e.target.value);
                 }}
+                required
               ></Form.Control>
             </Form.Group>
             <Form.Group controlId='category' className='my-3'>
@@ -140,6 +166,7 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setCategory(e.target.value);
                 }}
+                required
               ></Form.Control>
             </Form.Group>
             <Form.Group controlId='description' className='my-3'>
@@ -151,6 +178,7 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setDescription(e.target.value);
                 }}
+                required
               ></Form.Control>
             </Form.Group>
             <Form.Group controlId='countInStock' className='my-3'>
@@ -162,6 +190,7 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setCountInStock(e.target.value);
                 }}
+                required
               ></Form.Control>
             </Form.Group>
             <Form.Group controlId='image' className='my-3'>
@@ -173,7 +202,15 @@ const ProductEditScreen = ({ match, history }) => {
                 onChange={(e) => {
                   setImage(e.target.value);
                 }}
+                required
               ></Form.Control>
+              <Form.Control
+                type='file'
+                label='Choose File'
+                custom
+                onChange={uploadFileHandler}
+              ></Form.Control>
+              {uploading && <Loader />}
             </Form.Group>
             <Button type='submit' variant='primary'>
               Update
