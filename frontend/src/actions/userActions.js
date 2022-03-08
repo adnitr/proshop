@@ -37,6 +37,7 @@ import {
   PRODUCT_DELETE_RESET,
   PRODUCT_CREATE_RESET,
   PRODUCT_UPDATE_RESET,
+  PRODUCT_CREATE_REVIEW_RESET,
 } from '../constants/productConstants';
 
 export const login = (email, password) => async (dispatch) => {
@@ -251,4 +252,5 @@ export const logout = () => (dispatch) => {
   dispatch({ type: PRODUCT_DELETE_RESET });
   dispatch({ type: PRODUCT_CREATE_RESET });
   dispatch({ type: PRODUCT_UPDATE_RESET });
+  dispatch({ type: PRODUCT_CREATE_REVIEW_RESET });
 };
